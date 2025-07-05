@@ -1,7 +1,8 @@
 import discord  # type: ignore
-import requests # type: ignore
+import requests  # type: ignore
 import json
 import random
+import asyncio
 
 def get_meme():
     response = requests.get('https://meme-api.com/gimme')
@@ -9,43 +10,19 @@ def get_meme():
     return json_data['url']
 
 hey_responses = [
-    "Hey",
-    "Yo",
-    "Sup",
-    "What's up",
-    "How's it going",
-    "You good?",
-    "Wassup",
-    "Hey there",
-    "What's new",
-    "How you been",
-    "All good?",
-    "Long time no see",
-    "Glad you’re here",
-    "Look who showed up",
-    "You made it",
-    "There you are",
-    "What's happening",
-    "Everything chill?",
-    "What's the move",
-    "Nice to see you",
-    "What's good",
-    "How's life",
-    "Just in time",
-    "What’s the vibe",
-    "Ayy you",
-    "You around?",
-    "Back again?",
-    "Hey hey",
-    "What’s up with you",
-    "Here we go"
+    "Hey", "Yo", "Sup", "What's up", "How's it going", "You good?",
+    "Wassup", "Hey there", "What's new", "How you been", "All good?",
+    "Long time no see", "Glad you’re here", "Look who showed up", "You made it",
+    "There you are", "What's happening", "Everything chill?", "What's the move",
+    "Nice to see you", "What's good", "How's life", "Just in time", "What’s the vibe",
+    "Ayy you", "You around?", "Back again?", "Hey hey", "What’s up with you", "Here we go"
 ]
-
 
 class MyClient(discord.Client):
     def __init__(self, *, intents):
         super().__init__(intents=intents)
-        self.last_hey_response = None  # initialize here to prevent crash
+        self.last_hey_response = None
+        self.hello_tasks = {}  # Track per-channel hello wait tasks
 
     async def on_ready(self):
         print(f'Logged on as {self.user}!')
@@ -54,10 +31,26 @@ class MyClient(discord.Client):
         if message.author == self.user:
             return
 
-        msg = message.content.lower()  # normalize to lowercase for easier matching
+        msg = message.content.lower()
+        channel_id = message.channel.id
+
+        # Cancel any pending hello task if someone speaks
+        if channel_id in self.hello_tasks:
+            self.hello_tasks[channel_id].cancel()
+            del self.hello_tasks[channel_id]
 
         if msg.startswith('hello'):
-            await message.channel.send('Hello SEXY!')
+
+            # Start 60s wait to respond with "JARA.COM"
+            async def wait_for_reply():
+                try:
+                    await asyncio.sleep(60)
+                    await message.channel.send("JARA.COM")
+                except asyncio.CancelledError:
+                    pass  # Task was cancelled because someone responded
+
+            task = asyncio.create_task(wait_for_reply())
+            self.hello_tasks[channel_id] = task
 
         elif msg.startswith('hey'):
             response = random.choice(hey_responses)
@@ -80,4 +73,4 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = MyClient(intents=intents)
-client.run('MTM5MDk0NzA0NDUxMTcxNTM1OQ.GUTsHa.pfvN0DVmOqCexJrHnAcNFLu4v30UXXtXOtNBwQ')  # Replace with your actual bot token
+client.run('N/A')  # Replace with your actual bot token
