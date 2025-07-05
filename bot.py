@@ -1,0 +1,83 @@
+import discord  # type: ignore
+import requests # type: ignore
+import json
+import random
+
+def get_meme():
+    response = requests.get('https://meme-api.com/gimme')
+    json_data = json.loads(response.text)
+    return json_data['url']
+
+hey_responses = [
+    "Hey",
+    "Yo",
+    "Sup",
+    "What's up",
+    "How's it going",
+    "You good?",
+    "Wassup",
+    "Hey there",
+    "What's new",
+    "How you been",
+    "All good?",
+    "Long time no see",
+    "Glad you’re here",
+    "Look who showed up",
+    "You made it",
+    "There you are",
+    "What's happening",
+    "Everything chill?",
+    "What's the move",
+    "Nice to see you",
+    "What's good",
+    "How's life",
+    "Just in time",
+    "What’s the vibe",
+    "Ayy you",
+    "You around?",
+    "Back again?",
+    "Hey hey",
+    "What’s up with you",
+    "Here we go"
+]
+
+
+class MyClient(discord.Client):
+    def __init__(self, *, intents):
+        super().__init__(intents=intents)
+        self.last_hey_response = None  # initialize here to prevent crash
+
+    async def on_ready(self):
+        print(f'Logged on as {self.user}!')
+
+    async def on_message(self, message):
+        if message.author == self.user:
+            return
+
+        msg = message.content.lower()  # normalize to lowercase for easier matching
+
+        if msg.startswith('hello'):
+            await message.channel.send('Hello SEXY!')
+
+        elif msg.startswith('hey'):
+            response = random.choice(hey_responses)
+            while response == self.last_hey_response and len(hey_responses) > 1:
+                response = random.choice(hey_responses)
+            self.last_hey_response = response
+            await message.channel.send(response)
+
+        elif msg.startswith('$meme'):
+            await message.channel.send(get_meme())
+
+        elif 'wednesday' in msg:
+            await message.channel.send("https://www.thewrangleronline.com/wp-content/uploads/2017/09/wednesday-frog-900x600.jpg")
+
+        elif 'sus' in msg:
+            await message.channel.send("https://media.tenor.com/ZXvjz2NYgZkAAAAC/among-us.gif")
+
+# Set up intents
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = MyClient(intents=intents)
+client.run('MTM5MDk0NzA0NDUxMTcxNTM1OQ.GUTsHa.pfvN0DVmOqCexJrHnAcNFLu4v30UXXtXOtNBwQ')  # Replace with your actual bot token
