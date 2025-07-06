@@ -82,4 +82,4 @@ intents.message_content = True
 
 client = MyClient(intents=intents)
 
-client.run(os.getenv("MTM5MDk0NzA0NDUxMTcxNTM1OQ.G6rxmx.whCE94HdF28B2ujNPdwFlaloW3m4Bn8vinBuB4"))
+client.run(os.getenv("DISCORD_TOKEN"))
